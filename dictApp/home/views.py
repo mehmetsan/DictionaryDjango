@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from dictword.models import Dictword
+from django.contrib.auth.models import User
 
 import requests
 import json
@@ -18,28 +19,43 @@ def home(request):
 
         load_dotenv('.env')
 
-        search_word = request.POST.get('searchWord')
+        search_word = request.POST.get('search_word')
 
-        url = "https://wordsapiv1.p.rapidapi.com/words/" + search_word + "/definitions"
+        if search_word:
 
-        headers = {
-            'x-rapidapi-key': os.getenv('API_KEY'),
-            'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
-        }
+            url = "https://wordsapiv1.p.rapidapi.com/words/" + search_word + "/definitions"
 
-        response = requests.request("GET", url, headers=headers)
-        json_data = json.loads(response.text)
+            headers = {
+                'x-rapidapi-key': os.getenv('API_KEY'),
+                'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
+            }
 
-        first_meaning = json_data['definitions'][0]
+            response = requests.request("GET", url, headers=headers)
+            json_data = json.loads(response.text)
 
-        definition, partOfSpeech = first_meaning['definition'], first_meaning['partOfSpeech']
+            first_meaning = json_data['definitions'][0]
 
-        Dictword.objects.create(
-            user = current_user,
-            word = search_word,
-            definition = definition,
-            partOfSpeech = partOfSpeech
-        )
+            definition, partOfSpeech = first_meaning['definition'].capitalize(), first_meaning['partOfSpeech']
+
+            #definition = definition.replace(' ', '-')
+            def_one_word = definition.replace(' ','-')
+            dict_word = Dictword(
+                user = current_user,
+                word = search_word,
+                definition = definition,
+                partOfSpeech = partOfSpeech
+            )
+            
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, "query":dict_word, "def_one_word":def_one_word} )
+
+        else:
+            Dictword.objects.create(
+                user = request.user,
+                word = request.POST.get('word'),
+                definition = request.POST.get('definition').replace('-',' '),
+                partOfSpeech = request.POST.get('partOfSpeech')
+            )
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None} )
 
 
-    return render( request, 'home/home.html', {'words':user_words} )
+    return render( request, 'home/home.html', {'words':user_words, 'made_search':True, "query":None} )

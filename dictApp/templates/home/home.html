@@ -5,16 +5,40 @@
     <h1>Seacrh Here</h1>
     <form method='POST'>
         {% csrf_token %}
-        <input type="text" name="searchWord" id="searchWord" placeholder="Type a Word">
-
+        <input type="text" name="search_word" id="search_word" placeholder="Type a Word">
         <input type="submit" value="Search">
+
     </form>
+
+    {% if made_a_search %}
+    <h1> Searched Word </h1>
+    <article class="media content-section">
+        <div class="media-body">
+            <div class="article-metadata">
+                <span><i>{{query.partOfSpeech}}</i></span>
+            </div>
+            <h2><a class="article-title" href="#">{{ query.word }}</a></h2>
+            <p class="article-content">{{ query.definition }}</p>
+        </div>
+    </article>
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" id="user" name="user" value={{query.user}}>
+        <input type="hidden" id="word" name="word" value={{query.word}}>
+        <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
+        <input type="hidden" id="partOfSpeech" name="partOfSpeech" value={{query.partOfSpeech}}>
+        <input type="submit" value="Save this word">
+    </form>
+
+    {% endif %}
+
+    
 
 
 
     <h1> Your Dictionary </h1>
     {% for word in words %}
-
         <article class="media content-section">
             <div class="media-body">
                 <div class="article-metadata">
