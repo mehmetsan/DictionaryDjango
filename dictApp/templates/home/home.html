@@ -22,20 +22,26 @@
         </div>
     </article>
 
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" id="user" name="user" value={{query.user}}>
-        <input type="hidden" id="word" name="word" value={{query.word}}>
-        <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
-        <input type="hidden" id="partOfSpeech" name="partOfSpeech" value={{query.partOfSpeech}}>
-        <input type="submit" value="Save this word">
-    </form>
-
-    {% endif %}
-
+    <div class="buttons">
+        <form class="submit" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="user" name="user" value={{query.user}}>
+            <input type="hidden" id="word" name="word" value={{query.word}}>
+            <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
+            <input type="hidden" id="partOfSpeech" name="partOfSpeech" value={{query.partOfSpeech}}>
+            <input type="submit" value="Save this word">
+        </form>
     
+        <form class="clear" method="POST">
+            {% csrf_token %}
+            <input type="hidden" id="clear" name="clear" value="clear"}>
+            <input type="submit" value="Clear">
+        </form>
 
+    </div>
 
+ 
+    {% endif %}
 
     <h1> Your Dictionary </h1>
     {% for word in words %}
@@ -56,5 +62,21 @@
             height: 35px;
             text-align: center;
         }
+        h1 {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .buttons{
+            width: 200px;
+            margin-bottom: 100px;
+        }
+
+        .submit{
+            float: left;
+        }
+        .clear{
+            float: right;
+        }
+
     </style>
 {% endblock %}

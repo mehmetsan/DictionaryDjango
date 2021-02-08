@@ -21,6 +21,7 @@ def home(request):
 
         search_word = request.POST.get('search_word')
 
+        # IF SEARCHING A NEW WORD
         if search_word:
 
             url = "https://wordsapiv1.p.rapidapi.com/words/" + search_word + "/definitions"
@@ -37,8 +38,8 @@ def home(request):
 
             definition, partOfSpeech = first_meaning['definition'].capitalize(), first_meaning['partOfSpeech']
 
-            #definition = definition.replace(' ', '-')
             def_one_word = definition.replace(' ','-')
+
             dict_word = Dictword(
                 user = current_user,
                 word = search_word,
@@ -48,7 +49,8 @@ def home(request):
             
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, "query":dict_word, "def_one_word":def_one_word} )
 
-        else:
+        # IF SAVING THE WORD
+        elif( request.POST.get('user') ):
             Dictword.objects.create(
                 user = request.user,
                 word = request.POST.get('word'),
@@ -56,6 +58,5 @@ def home(request):
                 partOfSpeech = request.POST.get('partOfSpeech')
             )
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None} )
-
-
-    return render( request, 'home/home.html', {'words':user_words, 'made_search':True, "query":None} )
+        
+    return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None} )
