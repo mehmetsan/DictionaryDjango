@@ -10,37 +10,43 @@
 
     </form>
 
-    {% if made_a_search %}
-    <h1> Searched Word </h1>
-    <article class="media content-section">
-        <div class="media-body">
-            <div class="article-metadata">
-                <span><i>{{query.part_of_speech}}</i></span>
+    {% if made_a_search and not not_found %}
+        <h1> Searched Word </h1>
+        <article class="media content-section">
+            <div class="media-body">
+                <div class="article-metadata">
+                    <span><i>{{query.part_of_speech}}</i></span>
+                </div>
+                <h2><a class="article-title" href="#">{{ query.word }}</a></h2>
+                <p class="article-content">{{ query.definition }}</p>
             </div>
-            <h2><a class="article-title" href="#">{{ query.word }}</a></h2>
-            <p class="article-content">{{ query.definition }}</p>
+        </article>
+
+        <div class="buttons">
+            <form class="submit" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="word" name="word" value={{query.word}}>
+                <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
+                <input type="hidden" id="part_of_speech" name="part_of_speech" value={{query.part_of_speech}}>
+                <input type="submit" value="Save this word">
+            </form>
+        
+            <form class="clear" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="clear" name="clear" value="clear"}>
+                <input type="submit" value="Clear">
+            </form>
+
         </div>
-    </article>
-
-    <div class="buttons">
-        <form class="submit" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="word" name="word" value={{query.word}}>
-            <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
-            <input type="hidden" id="part_of_speech" name="part_of_speech" value={{query.part_of_speech}}>
-            <input type="submit" value="Save this word">
-        </form>
-    
-        <form class="clear" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="clear" name="clear" value="clear"}>
-            <input type="submit" value="Clear">
-        </form>
-
-    </div>
-
- 
     {% endif %}
+
+    {% if not_found %}
+        <div class="notFound">
+            <h2> Oops! Word is not found...</h2>
+            <h4 style="margin-left: 30px;">  Please try another word</h4>
+        </div>
+
+    {% endif%}
 
     <h1> Your Dictionary </h1>
     {% for word in words %}
@@ -75,6 +81,10 @@
         }
         .clear{
             float: right;
+        }
+        .notFound{
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
     </style>

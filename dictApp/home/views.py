@@ -20,11 +20,15 @@ def get_data(search_word):
 
     response = requests.request("GET", url, headers=headers)
     json_data = json.loads(response.text)
+    
+    try:
+        first_meaning = json_data['definitions'][0]
 
-    first_meaning = json_data['definitions'][0]
+        # Storing only the definition and part of speech
+        definition, part_of_speech = first_meaning['definition'], first_meaning['partOfSpeech']
 
-    # Storing only the definition and part of speech
-    definition, part_of_speech = first_meaning['definition'], first_meaning['partOfSpeech']
+    except:
+        definition, part_of_speech = False, False
 
     return definition, part_of_speech
 
@@ -56,11 +60,16 @@ def home(request):
         if search_word:
             definition, part_of_speech = "", ""
 
+            # If the word is already in the database
             if global_dict_check:
                 definition = global_dict_check.definition
                 part_of_speech = global_dict_check.part_of_speech
+            # If we need an API call
             else:
                 definition, part_of_speech = get_data(search_word)
+                if not definition:
+                    return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, 'practice':practice, 'not_found':True} )
+
 
             # Convert definition to one sentence to store its value in hidden input
             def_one_word = definition.replace(' ','-')
