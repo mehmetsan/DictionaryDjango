@@ -33,6 +33,9 @@
                 <!-- Navbar Right Side -->
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
+                        {% if practice %}
+                        <a class="nav-item nav-link" href="#">Practice</a>
+                        {% endif %}
                         <a class="nav-item nav-link" href="{% url 'logout'%}">Logout</a>
                     {% else %}
                         <a class="nav-item nav-link" href="{% url 'login'%}">Login</a>
