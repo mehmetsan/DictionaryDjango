@@ -1,16 +1,36 @@
 {% extends 'base.html' %}
 
 {% block Content %}
-    {% for post in posts %}
+
+    <h1>Seacrh Here</h1>
+    <form method='POST'>
+        {% csrf_token %}
+        <input type="text" name="searchWord" id="searchWord" placeholder="Type a Word">
+
+        <input type="submit" value="Search">
+    </form>
+
+
+
+    <h1> Your Dictionary </h1>
+    {% for word in words %}
+
         <article class="media content-section">
             <div class="media-body">
                 <div class="article-metadata">
-                    <a class="mr-2" href="#">{{ post.author }}</a>
-                    <small class="text-muted">{{ post.date_posted }}</small>
+                    <span><i>{{word.partOfSpeech}}</i></span>
                 </div>
-                <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-                <p class="article-content">{{ post.content }}</p>
+                <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
+                <p class="article-content">{{ word.definition }}</p>
             </div>
         </article>
     {% endfor %}
+
+    <style>
+        input[type="text"]{
+            width: 20%;
+            height: 35px;
+            text-align: center;
+        }
+    </style>
 {% endblock %}

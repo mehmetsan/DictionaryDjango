@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     # CREATED APPS
     'home.apps.HomeConfig',
     'users.apps.UsersConfig',
+    'dictword.apps.DictwordConfig',
 
     # THIRD PARTY
     'crispy_forms'
