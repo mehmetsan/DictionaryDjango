@@ -34,7 +34,7 @@
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
                         {% if practice %}
-                        <a class="nav-item nav-link" href="#">Practice</a>
+                        <a class="nav-item nav-link" href="{% url 'practice'%}">Practice</a>
                         {% endif %}
                         <a class="nav-item nav-link" href="{% url 'logout'%}">Logout</a>
                     {% else %}
