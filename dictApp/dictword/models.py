@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 class Dictword(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    user = models.ManyToManyField(User)
     word = models.CharField(max_length=50)
     definition = models.TextField()
     partOfSpeech = models.CharField(max_length=10, null=True)

@@ -25,7 +25,6 @@
     <div class="buttons">
         <form class="submit" method="POST">
             {% csrf_token %}
-            <input type="hidden" id="user" name="user" value={{query.user}}>
             <input type="hidden" id="word" name="word" value={{query.word}}>
             <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
             <input type="hidden" id="partOfSpeech" name="partOfSpeech" value={{query.partOfSpeech}}>
