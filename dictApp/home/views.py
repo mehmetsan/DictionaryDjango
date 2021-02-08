@@ -8,6 +8,33 @@ import os
 
 from dotenv import load_dotenv
 
+
+def get_data(search_word):
+    # API CONFIGURATION
+    url = "https://wordsapiv1.p.rapidapi.com/words/" + search_word + "/definitions"
+
+    headers = {
+        'x-rapidapi-key': os.getenv('API_KEY'),
+        'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
+    }
+
+    response = requests.request("GET", url, headers=headers)
+    json_data = json.loads(response.text)
+
+    first_meaning = json_data['definitions'][0]
+
+    # STORING ONLY THE DEFINITION AND THE PART OF SPEECH
+    definition, part_of_speech = first_meaning['definition'], first_meaning['partOfSpeech']
+
+    return definition, part_of_speech
+
+def global_check(word):
+    all_words = Dictword.objects.all()
+    global_dict_check = all_words.all().filter(word=word)
+
+    return global_dict_check[0] if global_dict_check else False
+
+
 # Create your views here.
 def home(request):
     
@@ -23,24 +50,17 @@ def home(request):
 
         search_word = request.POST.get('search_word')
 
+        global_dict_check = global_check(search_word)
+
         # IF SEARCHING A NEW WORD
         if search_word:
-
-            # API CONFIGURATION
-            url = "https://wordsapiv1.p.rapidapi.com/words/" + search_word + "/definitions"
-
-            headers = {
-                'x-rapidapi-key': os.getenv('API_KEY'),
-                'x-rapidapi-host': "wordsapiv1.p.rapidapi.com"
-            }
-
-            response = requests.request("GET", url, headers=headers)
-            json_data = json.loads(response.text)
-
-            first_meaning = json_data['definitions'][0]
-
-            # STORING ONLY THE DEFINITION AND THE PART OF SPEECH
-            definition, partOfSpeech = first_meaning['definition'], first_meaning['partOfSpeech']
+            definition, part_of_speech = "", ""
+            
+            if global_dict_check:
+                definition = global_dict_check.definition
+                part_of_speech = global_dict_check.part_of_speech
+            else:
+                definition, part_of_speech = get_data(search_word)
 
             # CONVERT INTO ONE SENTENCE, SO THAT IT CAN BE STORED IN THE HIDDEN INPUT FIELD
             def_one_word = definition.replace(' ','-')
@@ -49,7 +69,7 @@ def home(request):
             word_data = {
                 'word' : search_word.capitalize(),
                 'definition' : definition.capitalize(),
-                'partOfSpeech' : partOfSpeech.capitalize()
+                'part_of_speech' : part_of_speech.capitalize()
             }
             
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, "query":word_data, "def_one_word":def_one_word} )
@@ -65,14 +85,14 @@ def home(request):
                 dict_word = Dictword(
                     word = request.POST.get('word'),
                     definition = request.POST.get('definition').replace('-',' '),
-                    partOfSpeech = request.POST.get('partOfSpeech')
+                    part_of_speech = request.POST.get('part_of_speech')
                 )
                 dict_word.save()
                 dict_word.user.add(current_user)
-            # IF WORD IS IN DICTIONARY, BUT JUST NOT IN USER'S
+            # IF WORD IS IN DICTIONARY
             else:
                 user_dict_check = user_words.filter(word=word)
-
+                # IF THE WORD IS NOT IN USER'S DICTIONARY
                 if not user_dict_check:
                     global_dict_check.user.add(current_user)
 

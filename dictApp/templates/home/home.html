@@ -15,7 +15,7 @@
     <article class="media content-section">
         <div class="media-body">
             <div class="article-metadata">
-                <span><i>{{query.partOfSpeech}}</i></span>
+                <span><i>{{query.part_of_speech}}</i></span>
             </div>
             <h2><a class="article-title" href="#">{{ query.word }}</a></h2>
             <p class="article-content">{{ query.definition }}</p>
@@ -27,7 +27,7 @@
             {% csrf_token %}
             <input type="hidden" id="word" name="word" value={{query.word}}>
             <input type="hidden" id="definition" name="definition" value={{def_one_word}}>
-            <input type="hidden" id="partOfSpeech" name="partOfSpeech" value={{query.partOfSpeech}}>
+            <input type="hidden" id="part_of_speech" name="part_of_speech" value={{query.part_of_speech}}>
             <input type="submit" value="Save this word">
         </form>
     
@@ -47,7 +47,7 @@
         <article class="media content-section">
             <div class="media-body">
                 <div class="article-metadata">
-                    <span><i>{{word.partOfSpeech}}</i></span>
+                    <span><i>{{word.part_of_speech}}</i></span>
                 </div>
                 <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
                 <p class="article-content">{{ word.definition }}</p>
