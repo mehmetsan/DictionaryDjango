@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Dictword, Score
+from .models import Dictword, Interaction
 # Register your models here.
 
 admin.site.register(Dictword)
-admin.site.register(Score)
+admin.site.register(Interaction)
 
 

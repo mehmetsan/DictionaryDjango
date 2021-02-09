@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from dictword.models import Dictword, Score
+from dictword.models import Dictword, Interaction
 import requests
 import json
 import os
@@ -51,8 +51,8 @@ def home(request):
         load_dotenv('.env')
 
         search_word = request.POST.get('search_word')
-
         global_dict_check = global_check(search_word)
+        user_dict_check = user_words.filter(word=search_word)
 
         # If searching a new word
         if search_word:
@@ -62,6 +62,21 @@ def home(request):
             if global_dict_check:
                 definition = global_dict_check.definition
                 part_of_speech = global_dict_check.part_of_speech
+
+                if user_dict_check:
+                    interaction = Interaction.objects.all().filter(word=user_dict_check[0], user=current_user)
+                    search_count = interaction[0].search_count
+                    interaction.update(search_count = search_count + 1)
+                else:
+                    Interaction.objects.create(
+                        user=current_user,
+                        word=global_dict_check,
+                        points = 0,
+                        search_count = 1,
+                        appear_count = 0,
+                        power = 0
+                    )
+
             # If we need an API call
             else:
                 definition, part_of_speech = get_data(search_word)
@@ -101,18 +116,20 @@ def home(request):
 
             # If word is in the dictionary
             else:
-                user_dict_check = user_words.filter(word=word)
                 created_word = global_dict_check
                 # If word is not in the user's dictionary
                 if not user_dict_check:
                     global_dict_check.user.add(current_user)
-
-                    # Create a score for user - word
-                    Score.objects.create(
-                        user=current_user,
-                        word=created_word,
-                        points = 0
-                    )
+                    
+            # Create a score for user - word
+            Interaction.objects.create(
+                user=current_user,
+                word=created_word,
+                points = 0,
+                search_count = 1,
+                appear_count = 0,
+                power = 0
+            )
 
             # Update user words
             user_words = all_words.filter(user=current_user).order_by('-id')
@@ -121,12 +138,13 @@ def home(request):
 
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
         
+        # If removing a word
         elif( request.POST.get('word_to_remove')):
             remove_word = global_check(request.POST.get('word_to_remove'))
             remove_word.user.remove(current_user)
 
-            remove_score = Score.objects.all().filter(user=current_user, word=remove_word)
-            remove_score.delete()
+            remove_interaction = Interaction.objects.all().filter(user=current_user, word=remove_word)
+            remove_interaction.delete()
             # Update user words
             user_words = all_words.filter(user=current_user).order_by('-id')
 
@@ -150,7 +168,7 @@ def practice(request):
         # Correct answer given
         if user_answer == question_cw:
             cw_word = Dictword.objects.get(word=question_cw)
-            cw_score = Score.objects.all().filter(user=request.user, word=cw_word)
+            cw_score = Interaction.objects.all().filter(user=request.user, word=cw_word)
             cw_points = cw_score[0].points
             cw_score.update(points=cw_points + 1)
 
@@ -158,25 +176,31 @@ def practice(request):
         else:
             # Subtract from the correct answer
             cw_word = Dictword.objects.get(word=question_cw)
-            cw_score = Score.objects.all().filter(user=request.user, word=cw_word)
+            cw_score = Interaction.objects.all().filter(user=request.user, word=cw_word)
             cw_points = cw_score[0].points
             cw_score.update(points=cw_points - 3)
 
             # Subtract from first false word's points
             fw1_word = Dictword.objects.get(word=question_fw1)
-            fw1_score = Score.objects.all().filter(user=request.user, word=fw1_word)
+            fw1_score = Interaction.objects.all().filter(user=request.user, word=fw1_word)
             fw1_points = fw1_score[0].points
             fw1_score.update(points=fw1_points - 1)
 
             # Subtract from second false word's points
             fw2_word = Dictword.objects.get(word=question_fw2)
-            fw2_score = Score.objects.all().filter(user=request.user, word=fw2_word)
+            fw2_score = Interaction.objects.all().filter(user=request.user, word=fw2_word)
             fw2_points = fw2_score[0].points
             fw2_score.update(points=fw2_points - 1)
 
     # Get random words and a random definition
     user_words = Dictword.objects.all().filter(user=request.user)
     random_words = random.sample(list(user_words), 3)
+
+    # Update each word's appear counts
+    for each in random_words:
+        word_obj = Dictword.objects.all().filter(word=each)[0]
+        interaction_obj = Interaction.objects.all().filter(word=word_obj, user=request.user)
+        interaction_obj.update(appear_count = interaction_obj[0].appear_count + 1)
     
     random_definition = random_words[0].definition
     random_word = random_words[0].word

@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.base import Model
 
 # Create your models here.
 class Dictword(models.Model):
@@ -12,10 +11,13 @@ class Dictword(models.Model):
     def __str__(self):
         return self.word
 
-class Score(models.Model):
+class Interaction(models.Model):
     user = models.ForeignKey( User, on_delete=models.CASCADE)
     word = models.ForeignKey( Dictword, on_delete=models.CASCADE)
-    points = models.IntegerField()
-    
+    points = models.IntegerField(default=0)
+    search_count = models.IntegerField(default=0)
+    appear_count = models.IntegerField(default=0)
+    power = models.IntegerField(default=0)
+
     def __str__(self):
         return self.user.username + " - " + self.word.word
