@@ -11,9 +11,9 @@
     <link rel="stylesheet" href="{% static 'main.css' %}" type="text/css">
 
     {% if title %}
-        <title> Blog </title>
-    {% else %}
         <title> {{title}} </title>
+    {% else %}
+        <title> DjangoDictionary </title>
     {% endif%}
     <script
     src="https://code.jquery.com/jquery-3.4.1.min.js"
@@ -25,13 +25,12 @@
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-            <a class="navbar-brand mr-4" href="{% url 'home' %}">Django Blog</a>
+            <a class="navbar-brand mr-4" href="{% url 'home' %}">Django Dictionary</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
             </button>
             <div class="collapse navbar-collapse" id="navbarToggle">
                 <div class="navbar-nav mr-auto">
                 <a class="nav-item nav-link" href="{% url 'home' %}">Home</a>
-                <a class="nav-item nav-link" href="#">About</a>
                 </div>
                 <!-- Navbar Right Side -->
                 <div class="navbar-nav">

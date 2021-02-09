@@ -7,8 +7,6 @@
         {% csrf_token %}
         <input type="text" name="search_word" id="search_word" placeholder="Type a Word">
         <input type="submit" value="Search">
-        <button id="show_stats" class="more-button">Show Stats</button>
-
     </form>
 
     {% if made_a_search and not not_found %}
@@ -62,10 +60,7 @@
                             <input type="hidden" name="word_to_remove" value={{word.word}}>
                             <input type="submit" name="remove" value="Remove">
                         </form>
-
-
                     </div>
-                    
                 </div>
                 <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
                 <p class="article-content">{{ word.definition }}</p>

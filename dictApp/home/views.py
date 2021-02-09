@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from dictword.models import Dictword, Interaction
 from .decorators import user_see_practice
+from django.contrib.auth.decorators import login_required
 
 import requests
 import json
@@ -74,6 +75,7 @@ def get_powers( words, current_user ):
     return powers
 
 # Create your views here.
+@login_required(login_url='/users/login')
 def home(request):
     
     current_user = request.user
