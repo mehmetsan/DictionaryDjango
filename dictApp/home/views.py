@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from dictword.models import Dictword, Interaction
+from .decorators import user_see_practice
+
 import requests
 import json
 import os
 import random
 from dotenv import load_dotenv
-
+from math import sqrt
 
 def get_data(search_word):
     # API Configuration
@@ -32,10 +34,40 @@ def get_data(search_word):
 
 def global_check(word):
     all_words = Dictword.objects.all()
-    global_dict_check = all_words.all().filter(word=word)
+    global_dict_check = all_words.filter(word=word.capitalize())
 
     return global_dict_check[0] if global_dict_check else False
 
+def update_score( words, current_user ):
+    for each in words:
+        interaction_obj = Interaction.objects.all().filter(word=each, user=current_user)
+        appear_count = interaction_obj[0].appear_count
+        search_count = interaction_obj[0].search_count
+        points = interaction_obj[0].points
+
+        power = (points / sqrt(appear_count) ) + search_count / 5
+        interaction_obj.update(power=power)
+    return
+
+def get_powers( words, current_user ):
+    powers = []
+    for each in words:
+        word_obj = Dictword.objects.get(word=each)
+        interaction_obj = Interaction.objects.get(word=each, user=current_user)
+
+        power = interaction_obj.power
+        color = ""
+
+        if power >= 5:
+            color = 'green'
+        elif power >= 2:
+            color = 'yellow'
+        else:
+            color = 'red'
+
+
+        powers.append([word_obj, interaction_obj.power, color])
+    return powers
 
 # Create your views here.
 def home(request):
@@ -51,11 +83,12 @@ def home(request):
         load_dotenv('.env')
 
         search_word = request.POST.get('search_word')
-        global_dict_check = global_check(search_word)
-        user_dict_check = user_words.filter(word=search_word)
 
         # If searching a new word
         if search_word:
+            global_dict_check = global_check(search_word)
+            user_dict_check = user_words.filter(word=search_word)
+
             definition, part_of_speech = "", ""
 
             # If the word is already in the database
@@ -63,26 +96,17 @@ def home(request):
                 definition = global_dict_check.definition
                 part_of_speech = global_dict_check.part_of_speech
 
+                # Update interaction if the word is in user's dictionary
                 if user_dict_check:
                     interaction = Interaction.objects.all().filter(word=user_dict_check[0], user=current_user)
                     search_count = interaction[0].search_count
                     interaction.update(search_count = search_count + 1)
-                else:
-                    Interaction.objects.create(
-                        user=current_user,
-                        word=global_dict_check,
-                        points = 0,
-                        search_count = 1,
-                        appear_count = 0,
-                        power = 0
-                    )
 
             # If we need an API call
             else:
                 definition, part_of_speech = get_data(search_word)
                 if not definition:
                     return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, 'practice':practice, 'not_found':True} )
-
 
             # Convert definition to one sentence to store its value in hidden input
             def_one_word = definition.replace(' ','-')
@@ -93,6 +117,7 @@ def home(request):
                 'definition' : definition.capitalize(),
                 'part_of_speech' : part_of_speech.capitalize()
             }
+            user_words = get_powers( list(user_words) , request.user )
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, "query":word_data, "def_one_word":def_one_word, 'practice':practice} )
 
         # If saving the word
@@ -100,6 +125,7 @@ def home(request):
 
             word = request.POST.get('word')
             global_dict_check = global_check(word)
+            user_dict_check = user_words.filter(word=search_word)
             created_word = ""
 
             # If the word is not present in the whole dictionary
@@ -127,7 +153,7 @@ def home(request):
                 word=created_word,
                 points = 0,
                 search_count = 1,
-                appear_count = 0,
+                appear_count = 1,
                 power = 0
             )
 
@@ -136,6 +162,7 @@ def home(request):
             # Update Practice availability
             practice = True if len(user_words) > 9 else False
 
+            user_words = get_powers( list(user_words) , request.user )
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
         
         # If removing a word
@@ -151,11 +178,14 @@ def home(request):
             # Update Practice availability
             practice = True if len(user_words) > 9 else False
 
+            user_words = get_powers( list(user_words) , request.user )
             return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
 
+    user_words = get_powers( list(user_words) , request.user )
     # If the user click 'Clear'    
     return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
 
+@user_see_practice
 def practice(request):
 
     # If an answer is given
@@ -170,7 +200,7 @@ def practice(request):
             cw_word = Dictword.objects.get(word=question_cw)
             cw_score = Interaction.objects.all().filter(user=request.user, word=cw_word)
             cw_points = cw_score[0].points
-            cw_score.update(points=cw_points + 1)
+            cw_score.update(points=cw_points + 4)
 
         # Wrong answer given
         else:
@@ -178,7 +208,7 @@ def practice(request):
             cw_word = Dictword.objects.get(word=question_cw)
             cw_score = Interaction.objects.all().filter(user=request.user, word=cw_word)
             cw_points = cw_score[0].points
-            cw_score.update(points=cw_points - 3)
+            cw_score.update(points=cw_points - 2)
 
             # Subtract from first false word's points
             fw1_word = Dictword.objects.get(word=question_fw1)
@@ -195,6 +225,8 @@ def practice(request):
     # Get random words and a random definition
     user_words = Dictword.objects.all().filter(user=request.user)
     random_words = random.sample(list(user_words), 3)
+
+    update_score( list(user_words), request.user)
 
     # Update each word's appear counts
     for each in random_words:
