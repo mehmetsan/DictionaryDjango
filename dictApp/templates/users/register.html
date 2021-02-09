@@ -23,4 +23,23 @@
         </div>
 
     </div>
+    <script>
+        $("#id_username").change(function () {
+          var username = $(this).val();
+    
+          $.ajax({
+            url: '/users/check/',
+            data: {
+              'username': username
+            },
+            dataType: 'json',
+            success: function (data) {
+              if (! data.available) {
+                alert("Pick a different username, that one is already taken");
+              }
+            }
+          });
+    
+        });
+      </script>
 {% endblock %}

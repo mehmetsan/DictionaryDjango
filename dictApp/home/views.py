@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from dictword.models import Dictword, Interaction
 from .decorators import user_see_practice
 
@@ -54,19 +55,22 @@ def get_powers( words, current_user ):
     for each in words:
         word_obj = Dictword.objects.get(word=each)
         interaction_obj = Interaction.objects.get(word=each, user=current_user)
-
+     
+        appear_count = interaction_obj.appear_count
+        search_count = interaction_obj.search_count
         power = interaction_obj.power
+
         color = ""
 
         if power >= 5:
-            color = 'green'
+            color = 'greenyellow'
         elif power >= 2:
             color = 'yellow'
         else:
             color = 'red'
 
 
-        powers.append([word_obj, interaction_obj.power, color])
+        powers.append([word_obj, interaction_obj.power, color, appear_count, search_count, power])
     return powers
 
 # Create your views here.
@@ -106,6 +110,7 @@ def home(request):
             else:
                 definition, part_of_speech = get_data(search_word)
                 if not definition:
+                    user_words = get_powers( list(user_words) , request.user )
                     return render( request, 'home/home.html', {'words':user_words, 'made_a_search':True, 'practice':practice, 'not_found':True} )
 
             # Convert definition to one sentence to store its value in hidden input
@@ -183,7 +188,7 @@ def home(request):
 
     user_words = get_powers( list(user_words) , request.user )
     # If the user click 'Clear'    
-    return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
+    return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice, "word_stats":list(all_words.filter(user=current_user).order_by('-id'))} )
 
 @user_see_practice
 def practice(request):
@@ -251,3 +256,4 @@ def practice(request):
     }
 
     return render(request, 'home/practice.html', {'random_definition':random_definition, 'choices':choices, 'choices_dict':choices_dict})
+

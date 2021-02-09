@@ -7,6 +7,7 @@
         {% csrf_token %}
         <input type="text" name="search_word" id="search_word" placeholder="Type a Word">
         <input type="submit" value="Search">
+        <button id="show_stats" class="more-button">Show Stats</button>
 
     </form>
 
@@ -49,24 +50,32 @@
     {% endif%}
 
     <h1> Your Dictionary </h1>
-    {% for word, power, color in words %}
+    {% for word, power, color, appear_count, search_count, power in words %}
         <article class="media content-section">
             <div class="media-body">
                 <div class="article-metadata">
                     <span><i>{{word.part_of_speech}}</i></span>
                     <div class="remove">
-                        <button class="power" style="color: {{color}};"> <strong>Power: {{power}}</strong> </button>
+                        <button class="power" style="background-color: {{color}};"> <strong>Power: {{power}}</strong> </button>
                         <form class="remove-button" method="POST">
                             {% csrf_token %}
                             <input type="hidden" name="word_to_remove" value={{word.word}}>
                             <input type="submit" name="remove" value="Remove">
                         </form>
+
+
                     </div>
                     
                 </div>
                 <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
                 <p class="article-content">{{ word.definition }}</p>
-            </div>
+                <div>
+                    <input id='stats' type="hidden" name="appear_count" value={{appear_count}}>
+                    <input id='stats' type="hidden" name="word_to_remove" value={{search_count}}>
+                    <input id='stats' type="hidden" name="points" value={{power}}>
+                </div>
+            </div >
+
         </article>
     {% endfor %}
 
@@ -99,21 +108,26 @@
             float: right;
         }
         .power{  
-            background-color: grey; /* Green */
             border: none;
             color: white;
             text-align: center;
             text-decoration: none;
-            cursor: pointer;    
             float: left;    
         }
-        .remove-button{
-            float: right;
-            margin-left: 20px;
-        }
+
         .article-metadata{
             height: 35px;
+        }
+        .remove-button{
+            float:right;
+            margin-left: 10px;
+        }
+        .more-button{
+            border: none;
+            float:left;
+            cursor: pointer;    
         }
 
     </style>
 {% endblock %}
+
