@@ -6,7 +6,7 @@ from django.db.models.base import Model
 class Dictword(models.Model):
     user = models.ManyToManyField(User)
     word = models.CharField(max_length=50)
-    definition = models.TextField()
+    definition = models.CharField(max_length=100)
     part_of_speech = models.CharField(max_length=10, null=True)
 
     def __str__(self):

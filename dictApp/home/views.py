@@ -87,7 +87,7 @@ def home(request):
         elif( request.POST.get('word') ):
 
             word = request.POST.get('word')
-            global_dict_check = all_words.filter(word=word)
+            global_dict_check = global_check(word)
             created_word = ""
 
             # If the word is not present in the whole dictionary
@@ -105,35 +105,38 @@ def home(request):
             # If word is in the dictionary
             else:
                 user_dict_check = user_words.filter(word=word)
-
+                created_word = global_dict_check
                 # If word is not in the user's dictionary
                 if not user_dict_check:
                     global_dict_check.user.add(current_user)
 
-            # Create a score for user - word
-            Score.objects.create(
-                user=current_user,
-                word=created_word,
-                points = 0
-            )
+                    # Create a score for user - word
+                    Score.objects.create(
+                        user=current_user,
+                        word=created_word,
+                        points = 0
+                    )
 
             # Update user words
             user_words = all_words.filter(user=current_user).order_by('-id')
             # Update Practice availability
             practice = True if len(user_words) > 9 else False
 
-            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, 'practice': practice} )
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
         
         elif( request.POST.get('word_to_remove')):
             remove_word = global_check(request.POST.get('word_to_remove'))
             remove_word.user.remove(current_user)
+
+            remove_score = Score.objects.all().filter(user=current_user, word=remove_word)
+            remove_score.delete()
             # Update user words
             user_words = all_words.filter(user=current_user).order_by('-id')
 
             # Update Practice availability
             practice = True if len(user_words) > 9 else False
 
-            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, 'practice': practice} )
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
 
     # If the user click 'Clear'    
     return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
