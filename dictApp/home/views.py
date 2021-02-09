@@ -1,12 +1,9 @@
 from django.shortcuts import render
 from dictword.models import Dictword, Score
-
-
 import requests
 import json
 import os
 import random
-
 from dotenv import load_dotenv
 
 
@@ -155,10 +152,16 @@ def practice(request):
             cw_word = Dictword.objects.get(word=question_cw)
             cw_score = Score.objects.all().filter(user=request.user, word=cw_word)
             cw_points = cw_score[0].points
-            cw_score.update(points=cw_points + 3)
+            cw_score.update(points=cw_points + 1)
 
         # Wrong answer given
         else:
+            # Subtract from the correct answer
+            cw_word = Dictword.objects.get(word=question_cw)
+            cw_score = Score.objects.all().filter(user=request.user, word=cw_word)
+            cw_points = cw_score[0].points
+            cw_score.update(points=cw_points - 3)
+
             # Subtract from first false word's points
             fw1_word = Dictword.objects.get(word=question_fw1)
             fw1_score = Score.objects.all().filter(user=request.user, word=fw1_word)
@@ -180,9 +183,11 @@ def practice(request):
     false_word1 = random_words[1].word
     false_word2 = random_words[2].word
 
+    # So that correct answer changes every time
     choices = [random_word, false_word1, false_word2 ]
     random.shuffle(choices)
 
+    # For displaying the question on the practice page
     choices_dict = {
         'random_word' : random_word,
         'false_word1' : false_word1,
