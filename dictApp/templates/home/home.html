@@ -54,6 +54,11 @@
             <div class="media-body">
                 <div class="article-metadata">
                     <span><i>{{word.part_of_speech}}</i></span>
+                    <form class="remove" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="word_to_remove" value={{word.word}}>
+                        <input type="submit" name="remove" value="Remove">
+                    </form>
                 </div>
                 <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
                 <p class="article-content">{{ word.definition }}</p>
@@ -85,6 +90,12 @@
         .notFound{
             margin-top: 20px;
             margin-bottom: 20px;
+        }
+        .remove{
+            float: right;
+        }
+        .article-metadata{
+            height: 35px;
         }
 
     </style>

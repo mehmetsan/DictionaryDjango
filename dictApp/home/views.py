@@ -122,8 +122,19 @@ def home(request):
             # Update Practice availability
             practice = True if len(user_words) > 9 else False
 
-            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, 'practice': practice} )
         
+        elif( request.POST.get('word_to_remove')):
+            remove_word = global_check(request.POST.get('word_to_remove'))
+            remove_word.user.remove(current_user)
+            # Update user words
+            user_words = all_words.filter(user=current_user).order_by('-id')
+
+            # Update Practice availability
+            practice = True if len(user_words) > 9 else False
+
+            return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, 'practice': practice} )
+
     # If the user click 'Clear'    
     return render( request, 'home/home.html', {'words':user_words, 'made_a_search':False, "query":None, 'practice': practice} )
 
