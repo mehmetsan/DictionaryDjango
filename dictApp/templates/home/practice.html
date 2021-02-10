@@ -5,7 +5,6 @@
     <h1> Practice </h1>
     <p>{{random_definition}}</p>
 
-
     {% for each in choices %}
         <form class="submit" method="POST">
             {% csrf_token %}
@@ -13,7 +12,6 @@
             <input type="hidden" id="question_fw1" name="question_fw1" value={{choices_dict.false_word1}}>
             <input type="hidden" id="question_fw2" name="question_fw2" value={{choices_dict.false_word2}}>
             <input type="hidden" id="user_answer" name="user_answer" value={{each}}>
-
             <input class="choice" type="submit" value={{each}}>
         </form>
     {% endfor %}
@@ -26,6 +24,5 @@
             width: 200px;
         }
     </style>
-
 
 {% endblock %}

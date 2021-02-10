@@ -48,7 +48,7 @@
     {% endif%}
 
     <h1> Your Dictionary </h1>
-    {% for word, power, color, appear_count, search_count, power in words %}
+    {% for word, power, color in words %}
         <article class="media content-section">
             <div class="media-body">
                 <div class="article-metadata">
@@ -64,11 +64,6 @@
                 </div>
                 <h2><a class="article-title" href="#">{{ word.word }}</a></h2>
                 <p class="article-content">{{ word.definition }}</p>
-                <div>
-                    <input id='stats' type="hidden" name="appear_count" value={{appear_count}}>
-                    <input id='stats' type="hidden" name="word_to_remove" value={{search_count}}>
-                    <input id='stats' type="hidden" name="points" value={{power}}>
-                </div>
             </div >
 
         </article>
